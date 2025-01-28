@@ -1,0 +1,9 @@
+{
+  "editor.formatOnSave": true,
+  "[json][typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.codeActionsOnSave": {
+    "source.organizeImports.biome": "explicit"
+  }
+}
