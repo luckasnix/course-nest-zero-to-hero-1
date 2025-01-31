@@ -24,6 +24,24 @@ export class TasksService {
     return this.tasks;
   }
 
+  filterMany(searchTerm?: string, taskStatus?: TaskStatus): Task[] {
+    return this.tasks.filter(({ title, description, status }) => {
+      const filteringResult = {
+        searchTerm: true,
+        taskStatus: true,
+      };
+      if (searchTerm) {
+        filteringResult.searchTerm =
+          title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          description.toLowerCase().includes(searchTerm.toLowerCase());
+      }
+      if (taskStatus) {
+        filteringResult.taskStatus = status === taskStatus;
+      }
+      return Object.values(filteringResult).every(Boolean);
+    });
+  }
+
   updateOne(taskId: string, status: TaskStatus): Task | undefined {
     const task = this.findOne(taskId);
     if (task) {

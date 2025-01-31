@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Patch,
+  Query,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import type { Task, TaskStatus } from './tasks.types';
@@ -26,7 +27,13 @@ export class TasksController {
 
   @Get()
   @HttpCode(200)
-  getAllHandler(): Task[] {
+  getManyHandler(
+    @Query('search-term') searchTerm: string,
+    @Query('task-status') taskStatus: TaskStatus,
+  ): Task[] {
+    if (searchTerm || taskStatus) {
+      return this.tasksService.filterMany(searchTerm, taskStatus);
+    }
     return this.tasksService.findAll();
   }
 
