@@ -1,11 +1,15 @@
-import { Injectable } from '@nestjs/common';
-import type { Task, TaskStatus } from './tasks.types';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { FilterTasksDto } from './dto/filter-tasks.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
+import type { Task } from './tasks.types';
 
 @Injectable()
 export class TasksService {
   private tasks: Task[] = [];
 
-  insert(title: string, description: string): Task {
+  insert(createTaskDto: CreateTaskDto): Task {
+    const { title, description } = createTaskDto;
     const task: Task = {
       id: crypto.randomUUID(),
       title,
@@ -17,14 +21,19 @@ export class TasksService {
   }
 
   findOne(taskId: string): Task | undefined {
-    return this.tasks.find(({ id }) => id === taskId);
+    const task = this.tasks.find(({ id }) => id === taskId);
+    if (!task) {
+      throw new NotFoundException(`task with ID ${taskId} not found`);
+    }
+    return task;
   }
 
   findAll(): Task[] {
     return this.tasks;
   }
 
-  filterMany(searchTerm?: string, taskStatus?: TaskStatus): Task[] {
+  filterMany(filterTasksDto: FilterTasksDto): Task[] {
+    const { searchTerm, taskStatus } = filterTasksDto;
     return this.tasks.filter(({ title, description, status }) => {
       const filteringResult = {
         searchTerm: true,
@@ -42,15 +51,19 @@ export class TasksService {
     });
   }
 
-  updateOne(taskId: string, status: TaskStatus): Task | undefined {
+  updateOne(taskId: string, updateTaskDto: UpdateTaskDto): Task | undefined {
+    const { taskStatus } = updateTaskDto;
     const task = this.findOne(taskId);
     if (task) {
-      task.status = status;
+      task.status = taskStatus;
     }
     return task;
   }
 
   deleteOne(taskId: string): void {
-    this.tasks = this.tasks.filter(({ id }) => id !== taskId);
+    const task = this.findOne(taskId);
+    if (task) {
+      this.tasks = this.tasks.filter(({ id }) => id !== task.id);
+    }
   }
 }

@@ -10,7 +10,10 @@ import {
   Query,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
-import type { Task, TaskStatus } from './tasks.types';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { FilterTasksDto } from './dto/filter-tasks.dto';
+import { UpdateTaskDto } from './dto/update-task.dto';
+import type { Task } from './tasks.types';
 
 @Controller('tasks')
 export class TasksController {
@@ -18,21 +21,15 @@ export class TasksController {
 
   @Post()
   @HttpCode(201)
-  postOneHandler(
-    @Body('title') title: string,
-    @Body('description') description: string,
-  ): Task {
-    return this.tasksService.insert(title, description);
+  postOneHandler(@Body() createTaskDto: CreateTaskDto): Task {
+    return this.tasksService.insert(createTaskDto);
   }
 
   @Get()
   @HttpCode(200)
-  getManyHandler(
-    @Query('search-term') searchTerm: string,
-    @Query('task-status') taskStatus: TaskStatus,
-  ): Task[] {
-    if (searchTerm || taskStatus) {
-      return this.tasksService.filterMany(searchTerm, taskStatus);
+  getManyHandler(@Query() filterTasksDto: FilterTasksDto): Task[] {
+    if (Object.keys(filterTasksDto).length) {
+      return this.tasksService.filterMany(filterTasksDto);
     }
     return this.tasksService.findAll();
   }
@@ -47,9 +44,9 @@ export class TasksController {
   @HttpCode(200)
   patchOneHandler(
     @Param('taskId') taskId: string,
-    @Body('status') status: TaskStatus,
+    @Body() updateTaskDto: UpdateTaskDto,
   ): Task | undefined {
-    return this.tasksService.updateOne(taskId, status);
+    return this.tasksService.updateOne(taskId, updateTaskDto);
   }
 
   @Delete(':taskId')
