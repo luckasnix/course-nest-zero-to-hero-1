@@ -1,19 +1,19 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
-  Post,
   HttpCode,
   Param,
-  Delete,
   Patch,
+  Post,
   Query,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { FilterTasksDto } from './dto/filter-tasks.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import type { Task } from './tasks.types';
+import { TaskEntity } from './tasks.entity';
 
 @Controller('tasks')
 export class TasksController {
@@ -21,22 +21,21 @@ export class TasksController {
 
   @Post()
   @HttpCode(201)
-  postOneHandler(@Body() createTaskDto: CreateTaskDto): Task {
+  postOneHandler(@Body() createTaskDto: CreateTaskDto): Promise<string> {
     return this.tasksService.insert(createTaskDto);
   }
 
   @Get()
   @HttpCode(200)
-  getManyHandler(@Query() filterTasksDto: FilterTasksDto): Task[] {
-    if (Object.keys(filterTasksDto).length) {
-      return this.tasksService.filterMany(filterTasksDto);
-    }
-    return this.tasksService.findAll();
+  getManyHandler(
+    @Query() filterTasksDto: FilterTasksDto,
+  ): Promise<TaskEntity[]> {
+    return this.tasksService.find(filterTasksDto);
   }
 
   @Get(':taskId')
   @HttpCode(200)
-  getOneHandler(@Param('taskId') taskId: string): Task | undefined {
+  getOneHandler(@Param('taskId') taskId: string): Promise<TaskEntity | null> {
     return this.tasksService.findOne(taskId);
   }
 
@@ -45,13 +44,13 @@ export class TasksController {
   patchOneHandler(
     @Param('taskId') taskId: string,
     @Body() updateTaskDto: UpdateTaskDto,
-  ): Task | undefined {
+  ): Promise<string> {
     return this.tasksService.updateOne(taskId, updateTaskDto);
   }
 
   @Delete(':taskId')
   @HttpCode(204)
-  deleteOneHandler(@Param('taskId') taskId: string): void {
-    this.tasksService.deleteOne(taskId);
+  deleteOneHandler(@Param('taskId') taskId: string): Promise<string> {
+    return this.tasksService.deleteOne(taskId);
   }
 }
